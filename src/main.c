@@ -10,28 +10,43 @@
 #include <stdio.h>
 
 int currentNum = 0;
+int d = 0;
 
 void onKeyPress(unsigned char key, int x, int y) {
     switch (key) {
         case 'q':
             exit(1);
         break;
+        case 'd':
+            if (d < 360) {
+                d += 10;
+            } else {
+                d -= 360;
+            }
+        break;
         case ' ':
-            if (currentNum < 6) {
+            if (currentNum < 12) {
                 currentNum++;
             } else {
                 currentNum = 0;
             }
-            glutPostRedisplay();
         break;
     }
+    glutPostRedisplay();
 }
 
 void drawTriangle() {
-    glBegin( GL_TRIANGLES );
-		glVertex3f( 1.0, 0.0, 0.0 );
-		glVertex3f( 0.0, 1.0, 0.0 );
-		glVertex3f( 0.0, 0.0, 0.0 );
+    glBegin(GL_QUADS);
+        glVertex3f( 0.3, 0.2, 0.0 );
+        glVertex3f( 0.6, 1.0, 0.0 );
+        glVertex3f( 0.8, 1.0, 0.0 );
+        glVertex3f( 1.0, 0.2, 0.0 );
+        
+        glVertex3f( 0.0, 0.0, 0.0 );
+        glVertex3f( 1.0, 0.0, 0.0 );
+        glVertex3f( 1.0, 0.2, 0.0 );
+        glVertex3f( 0.0, 0.2, 0.0 );
+
     glEnd();
 }
 
@@ -41,18 +56,28 @@ void drawFractal(int num) {
         drawTriangle();
         break;
     default:
+        /*     T2
+         *  T3 T1
+         */
+        glColor3f( 1.0, 0.0, 1.0 );	
         glPushMatrix();
-            glScalef(0.5,0.5,1.0);
+            glTranslatef(0.5, 0, 0);
+            glScalef(0.5, 0.5, 1);
             drawFractal(num - 1);
         glPopMatrix();
+        
+        glColor3f( 0.0, 1.0, 1.0 );	
         glPushMatrix();
-            glTranslatef(0.5,0.0,0.0);
-            glScalef(0.5,0.5,1.0);
+            glTranslatef(1, 1, 0);
+            glScalef(0.5, 0.5, 1);
+            glRotatef(180, 0, 0, 1);
             drawFractal(num - 1);
         glPopMatrix();
+        glColor3f( 1.0, 1.0, 0.0 );	
         glPushMatrix();
-            glTranslatef(0.0,0.5,0.0);
-            glScalef(0.5,0.5,0.5);
+            glScalef(-0.5, 0.5, 1);
+            glRotatef(270, 0, 0, 1);
+            glTranslatef(-1, -1, 0);
             drawFractal(num - 1);
         glPopMatrix();
         break;
@@ -64,8 +89,8 @@ void renderScene(void) {
        
     glLoadIdentity();
     glTranslatef(-1, -1, 0);
-    glColor3f( 1.0, 1.0, 1.0 );	
-    
+    glScalef(2, 2, 0);
+
     drawFractal(currentNum);
     
     glutSwapBuffers();
@@ -86,5 +111,5 @@ int main(int argc, char **argv) {
     // Enter GLUT event processing cycle
     glutMainLoop();
 
-    return 1;
+    return 0;
 }

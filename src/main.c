@@ -1,41 +1,34 @@
 /**
- * Kompiuterinės grafikos 2 užduotis. 
- * Fraktalai.
+ * Computer graphics, task 2. 
+ * Affine fractals.
  * 
  * @author Aurelijus Banelis
  */
 
 #include <GL/gl.h>
 #include <GL/glut.h>
-#include <stdio.h>
+#define KEY_ESCAPE 27
 
-int currentNum = 0;
-int d = 0;
+int currentDepth = 0;
 
-void onKeyPress(unsigned char key, int x, int y) {
+void onKeyPress(unsigned char key, int keyX, int keyY) {
     switch (key) {
+        case KEY_ESCAPE:
         case 'q':
             exit(1);
         break;
-        case 'd':
-            if (d < 360) {
-                d += 10;
-            } else {
-                d -= 360;
-            }
-        break;
         case ' ':
-            if (currentNum < 12) {
-                currentNum++;
+            if (currentDepth < 9) {
+                currentDepth++;
             } else {
-                currentNum = 0;
+                currentDepth = 0;
             }
         break;
     }
     glutPostRedisplay();
 }
 
-void drawTriangle() {
+void drawPicture() {
     glBegin(GL_QUADS);
         glVertex3f( 0.3, 0.2, 0.0 );
         glVertex3f( 0.6, 1.0, 0.0 );
@@ -46,52 +39,70 @@ void drawTriangle() {
         glVertex3f( 1.0, 0.0, 0.0 );
         glVertex3f( 1.0, 0.2, 0.0 );
         glVertex3f( 0.0, 0.2, 0.0 );
-
     glEnd();
 }
 
-void drawFractal(int num) {
-    switch(num) {
+void drawFractal(int depth) {
+    switch(depth) {
     case 0:
-        drawTriangle();
+        drawPicture();
         break;
     default:
-        /*     T2
-         *  T3 T1
+        /* Parts of fractal:    T1 T2
+         *                      T3 T2
+         * 
+         * Coordinate system: ^y
+         *                    |
+         *                    +--->x
+         * 
+         * Order convention: T(R(S(v)))
          */
-        glColor3f( 1.0, 0.0, 1.0 );	
+        
+        glColor3f( 0.5, 1, 0.5 );  //T1
+        glPushMatrix();
+            glTranslatef(0.5, 1, 0);
+            glRotatef(180, 0, 0, 1);
+            glScalef(0.25, 0.25, 1);
+            drawFractal(depth - 1);
+        glPopMatrix();
+                
+        glColor3f( 0.0, 1.0, 1.0 );	//T2
+        glPushMatrix();
+            glTranslatef(0.5, 0.5, 1);
+            glRotatef(90, 0, 0, 1);
+            glScalef(-0.5, 0.5, 1);
+            drawFractal(depth - 1);
+        glPopMatrix();
+        
+        glColor3f( 1.0, 1.0, 0.0 );	//T3
+        glPushMatrix();
+            glTranslatef(1, 1, 0);
+            glRotatef(180, 0, 0, 1);
+            glScalef(0.5, 0.5, 1);
+            drawFractal(depth - 1);
+        glPopMatrix();
+        
+        glColor3f( 1.0, 0.0, 1.0 );	//T4
         glPushMatrix();
             glTranslatef(0.5, 0, 0);
             glScalef(0.5, 0.5, 1);
-            drawFractal(num - 1);
-        glPopMatrix();
-        
-        glColor3f( 0.0, 1.0, 1.0 );	
-        glPushMatrix();
-            glTranslatef(1, 1, 0);
-            glScalef(0.5, 0.5, 1);
-            glRotatef(180, 0, 0, 1);
-            drawFractal(num - 1);
-        glPopMatrix();
-        glColor3f( 1.0, 1.0, 0.0 );	
-        glPushMatrix();
-            glScalef(-0.5, 0.5, 1);
-            glRotatef(270, 0, 0, 1);
-            glTranslatef(-1, -1, 0);
-            drawFractal(num - 1);
+            drawFractal(depth - 1);
         glPopMatrix();
         break;
     }
 }
 
-void renderScene(void) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-       
-    glLoadIdentity();
+void init() {
+    glMatrixMode(GL_PROJECTION);
     glTranslatef(-1, -1, 0);
     glScalef(2, 2, 0);
+    glMatrixMode(GL_MODELVIEW);
+}
 
-    drawFractal(currentNum);
+void renderScene(void) {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    drawFractal(currentDepth);
     
     glutSwapBuffers();
 }
@@ -103,6 +114,7 @@ int main(int argc, char **argv) {
     glutInitWindowPosition(1000,500);
     glutInitWindowSize(320,320);
     glutCreateWindow("U2");    
+    init();
     
     // Register callbacks
     glutDisplayFunc(renderScene);

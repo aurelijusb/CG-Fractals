@@ -26,6 +26,7 @@ GLfloat colours[N][3]   = {{0.5, 1, 0.5}, {0, 1,   1}, {1,0,   1}, {1,1,   0}};
 /*
  * Global variables
  */
+#define MAX_DEPTH 9
 int currentDepth = 0;
 enum MODE {transformationBased, randomBased} currentMode = randomBased;
 
@@ -46,7 +47,7 @@ void onKeyPress(unsigned char key, int keyX, int keyY) {
             }
         break;
         case ' ':
-            if (currentDepth < 9) {
+            if (currentDepth < MAX_DEPTH) {
                 currentDepth++;
             } else {
                 currentDepth = 0;
@@ -78,7 +79,7 @@ void drawPicture() {
 /*
  * Drawing fractal using affine transforamtions
  */
-void drawFractalAffine(int depth) {
+void drawFractalAffine(int depth, int of, int color) {
     if (depth > 0) {
         /* Parts of fractal:    T1 T2
          *                      T3 T2
@@ -96,8 +97,11 @@ void drawFractalAffine(int depth) {
                 glTranslatef(translate[i][0], translate[i][1], 0);
                 glRotatef(rotation[i], 0, 0, 1);
                 glScalef(scale[i][0], scale[i][1], 1);
-                glColor3f(colours[i][0], colours[i][1], colours[i][2]);
-                drawFractalAffine(depth - 1);
+                if (depth == of) {
+                    color = i;
+                    glColor3f(colours[color][0], colours[color][1], colours[color][2]);
+                }
+                drawFractalAffine(depth - 1, of, color);
             glPopMatrix();
         }
     } else {
@@ -148,7 +152,7 @@ void renderScene(void) {
     if (currentMode == randomBased) {
         drawFractalRandom();
     } else {
-        drawFractalAffine(currentDepth);    
+        drawFractalAffine(currentDepth, currentDepth, 0);
     }
     
     glutSwapBuffers();

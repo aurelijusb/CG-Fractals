@@ -119,6 +119,9 @@ void drawFractalRandom() {
     int i, j;
     for (i = 0; i < max; i++) {
         j = rand()%4;
+        if (j == 0) {   //Probability: 1/8
+            j = rand()%4;
+        }
         
         
         /*     / x'\   / s_x*cos(r)  -s_x*sin(r)  t_x \   / x \
@@ -178,7 +181,7 @@ int main(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_ALPHA);
     glutInitWindowPosition(1000,500);
-    glutInitWindowSize(320,320);
+    glutInitWindowSize(640,640);
     glutCreateWindow("U2");    
     init();
     
